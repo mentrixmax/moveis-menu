@@ -25,7 +25,14 @@ export default function NewProduct() {
 
     api.post("/produtos",body).then( (response)=>{
     // console.log(response);
-     router.replace("/logado/products")
+    router.replace(
+       {
+         pathname:"/logado/products",
+         params:{ refreshDate:Date.now()}
+       }
+
+     )
+
     }).catch((error)=>{
       console.log(error);
     });

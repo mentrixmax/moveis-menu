@@ -1,11 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
 import api from '../../api/axiosConfig'
 import { useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { getData } from '../../api/StorageService';
 
 export default function Products() {
+ const {refreshDate} = useLocalSearchParams(); 
  const [produtcts, setProducts] = useState([
   
  ]);
@@ -28,7 +30,49 @@ export default function Products() {
 
   getData();
 
- },[refresh])
+ },[refresh, refreshDate])
+
+ const click = async (intemId) =>{
+  router.replace(
+    {
+      pathname:"/logado/editproduct",
+      params:{ productId:intemId}
+
+    }
+
+  );
+  console.log(intemId);
+ }
+ const deleteFunct = async (itemId)=>{
+  try {
+  const resultado = await api.delete(`/produtos/delete/${itemId}`);
+  console.log(resultado);
+  setRefresh(true);
+  //getData();
+  }catch(error){
+    console.log(error);
+  }
+
+ }
+
+ const clickLong = async (intemId) =>{
+
+  console.log("longo");
+  console.log(intemId);
+  Alert.alert("IFCE", "Deseja Excluir",[
+  {text:"Cancelar",
+   style:"cancel" 
+  },
+  {
+
+    text:"Confirmar",
+    style:"destructive",
+    onPress:()=>{deleteFunct(intemId)}
+
+  }
+
+  ],{cancelable:true})
+}
 
   return (
     <View style={styles.container}>
@@ -37,18 +81,22 @@ export default function Products() {
         setRefresh(true)
       }}></Button>
 
-      <Button  title='Novo' onPress={ ()=>{
-        router.replace('/logado/newproduct');
-      }}></Button>
-
+     
       <StatusBar style="auto" />
       <ScrollView  style={styles.scroll}>
         {produtcts.map((produto, index) =>(
-          <View key={produto.id} style={styles.itens}>
+          <TouchableOpacity key={produto.id} style={styles.itens}
+          onPress={()=>{
+            click(produto.id)
+          }}
+          onLongPress={()=>{
+            clickLong(produto.id)
+          }}
+          >
             <Text> Codigo:  {produto.barCode}</Text>
              <Text>Descrição: {produto.name}</Text>
              <Text>Preço: {produto.price}</Text>
-        </View> ))}
+        </TouchableOpacity> ))}
       </ScrollView>
     </View>
   );
